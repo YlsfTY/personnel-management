@@ -1,0 +1,26 @@
+
+	// sign := dao.SearchUserName("测试")
+	// if sign {
+	// fmt.Println("用户存在")
+	// }else{
+	// fmt.Println("用户不存在	")
+	// }
+	// //
+	// sign,err := dao.CheckUser(&dao.User{
+	// 	Name: "测试",
+	// 	Password: "123456",
+	// })
+
+	// sign, err = dao.DeleteUser(&dao.User{
+	// 	Name:     "测试3",
+	// 	Password: "6543210",
+	// })
+
+	// sign,err 	= dao.CreateUser(&dao.User{
+	// 	Name: "测试5",
+	// 	Password: "6543210",
+	// })
+
+
+
+	// fmt.Println(sign, err)

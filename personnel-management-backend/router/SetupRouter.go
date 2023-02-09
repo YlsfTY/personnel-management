@@ -1,7 +1,7 @@
 package router
 
 import (
-	"personnel-admin/controller"
+	"personnel-management-backend/controller"
 
 	"github.com/gin-gonic/gin"
 )

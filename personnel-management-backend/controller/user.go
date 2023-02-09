@@ -3,7 +3,7 @@ package controller
 import (
 	// "log"
 	"net/http"
-	"personnel-admin/dao"
+	"personnel-management-backend/dao"
 
 	"github.com/gin-gonic/gin"
 )
@@ -81,9 +81,9 @@ func Login(ctx *gin.Context) {
 		})
 	}
 	// 返回数据
-	ctx.JSON(http.StatusOK,gin.H{
-		"code":http.StatusOK,
-		"msg":"Login success",
+	ctx.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"msg":  "Login success",
 	})
 
 }

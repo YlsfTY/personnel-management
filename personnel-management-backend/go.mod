@@ -1,8 +1,12 @@
-module personnel-admin
+module personnel-management-backend
 
 go 1.19
 
-require github.com/gin-gonic/gin v1.8.2
+require (
+	github.com/gin-gonic/gin v1.8.2
+	gorm.io/driver/mysql v1.4.6
+	gorm.io/gorm v1.24.5
+)
 
 require (
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -26,6 +30,4 @@ require (
 	golang.org/x/text v0.5.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gorm.io/driver/mysql v1.4.5 // indirect
-	gorm.io/gorm v1.24.4 // indirect
 )

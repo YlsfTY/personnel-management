@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
+	"personnel-management-backend/router"
 	// "net/http"
 	// "personnel-admin/controller"
-	"personnel-admin/router"
 	// "personnel-admin/dao"
-
 	// "github.com/gin-gonic/gin"
 )
 

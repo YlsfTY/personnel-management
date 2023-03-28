@@ -12,9 +12,10 @@
 </template>
 
 <script lang="ts">
-import { ref } from 'vue'
+  
+import { ref,defineComponent } from 'vue'
 
-export default {
+export default defineComponent ({
   name: 'Welcome',
   setup() {
     const sum = ref(10)
@@ -23,7 +24,7 @@ export default {
     }
   }
 
-}
+})
 </script>
 
 <style lang="scss" scoped>

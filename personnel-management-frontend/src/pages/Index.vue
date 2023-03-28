@@ -19,19 +19,18 @@
 <script lang="ts">
 import Login from '../components/Login.vue';
 import Welcome from '../components/Welcome.vue'
-import { ref } from 'vue'
-import {post,get} from "../utils/server"
+import { defineComponent,} from 'vue'
 
-export default {
-  name:'Index',
+export default defineComponent({
+  name:"Index",
   components:{
     Welcome,
     Login,
   },
   setup(props) {
-
+    
   } 
-}
+})
 </script>
 
 <style lang="scss" scoped>

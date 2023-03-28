@@ -3,7 +3,6 @@
     <!-- 注册 -->
     <div class="register-box"
       :class="{ 'slide-up':isLoginMode }" 
-      ref="registerBox"
     >
       <h2 class="register-title"
         @click="toggleMode"
@@ -31,7 +30,6 @@
     <!-- 登录 -->
     <div class="login-box"
       :class="{ 'slide-up':!isLoginMode }"
-      ref="loginBox"
     >
       <div class="center">
         <h2 class="login-title"
@@ -41,7 +39,7 @@
         </h2>
         <div class="input-box">
           <input
-            v-for="(input, index) in inputs" end="2" 
+            v-for="(input, index) in inputs.slice(0,2)" 
             :key="index"
             :type="input.type"
             :placeholder="input.placeholder"
@@ -63,15 +61,9 @@
 </template>
 
 <script lang="ts">
-import { ref, reactive, watch, nextTick } from 'vue';
-import { defineComponent } from 'vue';
-import { userLogin, userRegister } from '../utils/request';
-
-interface UserData {
-  userName: string;
-  userPassword: string;
-  verifyPassword: string;
-}
+import { ref, reactive, watch, defineComponent } from 'vue';
+import { userLogin, userRegister } from '@/utils/request';
+import { UserData } from "@/types/UserData"
 
 interface inputCell {
   type: "text" | "password";
@@ -140,33 +132,24 @@ export default defineComponent({
         input.isShake = false
       })
     }
-    watch([
-      () => inputs[0].isShake,
-      () => inputs[1].isShake,
-      () => inputs[2].isShake,
-    ],
-      ([newIsShake_0, newIsShake_1, newIsShake_2]) => {
-        if (newIsShake_0 === true) {
-          setTimeout(() => {
-            inputs[0].isShake = false
-          }, 820)
-        }
-        if (newIsShake_1 === true) {
-          setTimeout(() => {
-            inputs[1].isShake = false
-          }, 820)
-        }
-        if (newIsShake_2 === true) {
-          setTimeout(() => {
-            inputs[2].isShake = false
-          }, 820)
-        }
+
+    const SHAKING_TIME = 820;
+    watch(
+      inputs.map(input => () => input.isShake),
+      newIsShake => {
+        newIsShake.forEach((isShake, index) => {
+          if (isShake) {
+            setTimeout(() => {
+              inputs[index].isShake = false;
+            }, SHAKING_TIME);
+          }
+        })
       },
     )
 
 
     function handleBlur(input: inputCell): void {
-      const value = data[input.name]
+      const value = data[input.name]!
       switch (input.name) {
         case 'userName': {
           if (value.length < input.minlength || value.length > input.maxlength) {
@@ -214,33 +197,49 @@ export default defineComponent({
       }
     }
     function handleLogin() {
-      for (let i = 0; i < 2; i++) {
-        handleBlur(inputs[i])
-        if (data[inputs[i].name].length == 0){
-          return
+      let submitErr = false
+      inputs.slice(0,2).forEach(input=>{
+        handleBlur(input)
+        if (data[input.name]==='') {
+          submitErr = true
         }
+      })
+      if (submitErr) {
+        window.$message.warning("格式有误")
+        return
       }
-      userLogin({
+      const submitData: UserData = {
         userName: data.userName,
         userPassword: data.userPassword,
-      }).then((res) => {
-        console.log(res);
-      });
+      }
+      userLogin(submitData)
+        .then((res) => {
+          // console.log(res);
+          window.$message.success("登录成功")
+        })
     }
 
     function handleRegister() {
+      let submitErr = false
       inputs.forEach(input => {
         handleBlur(input)
-        if (data[input.name].length == 0){
-          return
+        if (data[input.name]==='') {
+          submitErr = true
         }
       })
-      userRegister({
+      if (submitErr) {
+        window.$message.warning("格式有误")
+        return
+      }
+      const submitData: UserData = {
         userName: data.userName,
         userPassword: data.userPassword,
-      }).then((res) => {
-        console.log(res);
-      });
+      }
+      userRegister(submitData)
+        .then((res) => {
+          // console.log(res);
+          window.$message.success("注册成功")
+        })
     }
 
     return {

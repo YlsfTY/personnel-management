@@ -1,5 +1,6 @@
 <template>
   <n-message-provider>
+    <useMessageComponent/>
     <router-view/>
   </n-message-provider>
 </template>
@@ -7,11 +8,13 @@
 <script lang="ts">
 import {NMessageProvider} from 'naive-ui'
 import {defineComponent} from 'vue'
+import useMessageComponent from '@/components/useMessageComponents.vue'
 
 export default defineComponent({
   name: 'App',
   components: {
-    NMessageProvider
+    NMessageProvider,
+    useMessageComponent
   }
 })
 </script>

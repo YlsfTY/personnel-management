@@ -1,16 +1,16 @@
+import { post, get } from "./server.js"
+import { UserData } from "@/types/UserData"
 
-import {post,get} from "./server.js"
-
-export const userLogin = data=>{
+export const userLogin = (data: UserData) => {
   return post({
-    url:'/user/login',
+    url: '/user/login',
     data
   })
 }
 
-export const userRegister = data=>{
+export const userRegister = (data: UserData) => {
   return post({
-    url:'/user/register',
+    url: '/user/register',
     data
   })
 }

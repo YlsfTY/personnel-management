@@ -13,11 +13,15 @@
       <h1>介绍</h1>
     </div>
   </div>
+
 </template>
 
-<script>
+<script lang="ts">
 import Login from '../components/Login.vue';
 import Welcome from '../components/Welcome.vue'
+import { ref } from 'vue'
+import {post,get} from "../utils/server"
+
 export default {
   name:'Index',
   components:{
@@ -25,6 +29,7 @@ export default {
     Login,
   },
   setup(props) {
+
   } 
 }
 </script>
@@ -36,7 +41,7 @@ export default {
     justify-content: center;
     // align-items: center;
     height: 100vh;
-    background-image: url(/img/bgc.png);
+    background-image: url(../assets/img/bgc.png);
     background-color: rgba($color: #000000, $alpha: 0.3);
     
     #index-top {

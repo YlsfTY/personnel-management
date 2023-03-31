@@ -1,32 +1,83 @@
 package dao
 
-// import "golang.org/x/crypto/bcrypt"
+import (
+	"errors"
+	"fmt"
+	"log"
+
+	"gorm.io/gorm"
+)
 
 // ---------- User表操作
-// 查询用户是否存在(检验用户名)
-func SearchUserName(user *User) bool {
-	result := MysqlDb.Limit(1).Find(user, "user_name = ?", user.Name)
-	// 结果条数不为0返回真
-	return result.RowsAffected != 0
+// 寻找用户
+// true用户名存在
+func (u *User) SearchUserName() (bool, error) {
+	// result := Db.Limit(1).Find(user, "user_name = ?", user.Name)
+	err := Db.First(u, "user_name = ?", u.Name).Error
+	if err != nil {
+		// 判断err是否是未找到数据错误
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		} else {
+			log.Printf("Error while checking if username exists: %v", err)
+			return false, err
+		}
+	} else {
+		return true, nil
+	}
 }
 
 // 添加用户
-func CreateUser(user *User) (bool, error) {
-	// 添加用户不进行用户校验，需要自行调用
-	result := MysqlDb.Select("user_name", "user_password").Create(&user)
-	return result.Error == nil, result.Error
+// true操作成功;false err=nil用户存在
+func (u *User) CreateUser() (bool, error) {
+	exist, err := u.SearchUserName()
+	if err != nil {
+		return false, err
+	} else if exist {
+		return false, nil
+	}
+
+	err = Db.Select("user_name", "user_password").Create(&u).Error
+	if err != nil {
+		log.Printf("Error while creating user: %v", err)
+		return false, err
+	}
+	return true, nil
 }
 
 // 删除用户(state赋0，不删除数据库记录)
-func DeleteUser(user *User) (bool, error) {
-	SearchUserName(user)
-	user.State = false
-	result := MysqlDb.Save(user)
-	return result.Error == nil, result.Error
+// true操作成功;false err=nil用户不存在
+func (u *User) DeleteUser() (bool, error) {
+	exist, err := u.SearchUserName()
+	if err != nil {
+		return false, err
+	} else if !exist {
+		return false, nil
+	}
+
+	u.State = false
+	err = Db.Save(u).Error
+	if err != nil {
+		log.Printf("Error while updating user state: %v", err)
+		return false, err
+	}
+	return true, nil
 }
 
-func CheckState(user *User) (bool, error) {
-	result := MysqlDb.Limit(1).
-		Find(user, "state = ?", true)
-	return result.RowsAffected != 0, result.Error
+// 检验用户状态
+func (u *User) CheckUserState() (bool, error) {
+	exist, err := u.SearchUserName()
+	if err != nil {
+		// 查询错误
+		return true, err
+	} else if !exist {
+		// 用户不存在
+		return false, fmt.Errorf("The user does not exist.")
+	}
+	if u.State {
+		// 用户正常
+		return true, nil
+	}
+	// state=false
+	return false, nil
 }

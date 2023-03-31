@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "*.resource": "restructuredtext",
+    "stdbool.h": "c"
+  },
+  "cSpell.words": [
+    "ulits"
+  ]
+}

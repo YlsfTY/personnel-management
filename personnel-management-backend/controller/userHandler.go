@@ -1,138 +1,119 @@
 package controller
 
 import (
-	// "log"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"personnel-management-backend/common"
 	"personnel-management-backend/dao"
+	"personnel-management-backend/ulits"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Register(ctx *gin.Context) {
+func UserRegister(ctx *gin.Context) {
 	// 获取参数
 	name := ctx.PostForm("userName")
 	password := ctx.PostForm("userPassword")
+
+	errMsg, ok := validateUserParams(name, password)
+	if !ok {
+		ulits.ResponseWithError(ctx, http.StatusBadRequest, errMsg)
+		return
+	}
+
+	// 密码加密（bcrypt加密）
+	hasedPassword, err := hashPassword(password)
+	if err != nil {
+		errMsg = "Encryption error"
+		ulits.ResponseWithError(ctx, http.StatusInternalServerError, errMsg)
+		return
+	}
 	user := &dao.User{
 		Name:     name,
-		Password: password,
+		Password: hasedPassword,
 		State:    true,
 	}
 
-	// 数据验证
-	if len(name) == 0 || len(password) == 0 {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": 422,
-			"msg":  "Account or password resolution failed",
-		})
-		return
-	}
-
-	if len(password) < 6 {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": http.StatusUnprocessableEntity,
-			"msg":  "Password cannot be less than 6 digits",
-		})
-		return
-	}
-
-	if dao.SearchUserName(user) {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": http.StatusUnprocessableEntity,
-			"msg":  "Duplicate usernames",
-		})
-		return
-	}
-	// 密码加密（bcrypt加密）
-	hasedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"code": 500,
-			"msg":  "Encryption error",
-		})
-		return
-	}
-	user.Password = string(hasedPassword)
-
 	// 创建用户
-	_, err = dao.CreateUser(user)
+	ok, err = user.CreateUser()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"code": 500,
-			"msg":  "Failed to add user",
-		})
+		// 创建失败
+		errMsg = "Failed to create user"
+		ulits.ResponseWithError(ctx, http.StatusInternalServerError, errMsg)
 		return
 	}
+	if !ok {
+		// 用户已经存在
+		errMsg = "The user already exists."
+		ulits.ResponseWithError(ctx, http.StatusConflict, errMsg)
+		return
+	}
+
 	// 返回数据
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"msg":  "Register success!",
+	ulits.ResponseWithData(ctx, http.StatusOK, ulits.ResponseData{
+		Code: http.StatusOK,
+		Data: nil,
+		Msg:  "Register success!",
 	})
 }
 
-func Login(ctx *gin.Context) {
+func UserLogin(ctx *gin.Context) {
 	// 获取参数
 	name := ctx.PostForm("userName")
 	password := ctx.PostForm("userPassword")
-	user := &dao.User{
-		Name:     name,
-		Password: password,
-	}
 
 	// 数据验证
-	if len(name) == 0 || len(password) < 6 {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": http.StatusUnprocessableEntity,
-			"msg":  "Account or password resolution failed",
-		})
+	errMsg, ok := validateUserParams(name, password)
+	if !ok {
+		ulits.ResponseWithError(ctx, http.StatusBadRequest, errMsg)
 		return
 	}
-	// 判断用户是否存在
-	sign := dao.SearchUserName(user)
-	if !sign {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": 422,
-			"msg":  "The user does not exist ",
-		})
-		return
+
+	user := &dao.User{
+		Name: name,
 	}
-	// 验证密码
-	err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+
+	//  检验用户
+	ok, err := user.CheckUserState()
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"code": 400,
-			"msg":  "wrong password",
-		})
+		if errors.Is(err, fmt.Errorf("The user does not exist.")) {
+			errMsg = err.Error()
+			ulits.ResponseWithError(ctx, http.StatusConflict, errMsg)
+			return
+		}
+		errMsg = "Internal Server Error."
+		ulits.ResponseWithError(ctx, http.StatusInternalServerError, errMsg)
+		return
+	} else if !ok {
+		errMsg = "This account has been deleted."
+		ulits.ResponseWithError(ctx, http.StatusForbidden, errMsg)
 		return
 	}
-	// 分析是否异常
-	sign, _ = dao.CheckState(user)
-	if !sign {
-		ctx.JSON(http.StatusUnprocessableEntity, gin.H{
-			"code": 422,
-			"msg":  "User exception",
-		})
+
+	// 验证密码
+	if !verifPassword(user.Password, password) {
+		errMsg = "wrong password"
+		ulits.ResponseWithError(ctx, http.StatusBadRequest, errMsg)
 		return
 	}
 	// 发放token
 	token, err := common.CreateToken(user)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"code": 500,
-			"msg":  "token err",
-		})
+		errMsg = "Error generating token"
 		log.Printf("token generate error:%v", err)
+		ulits.ResponseWithError(ctx, http.StatusInternalServerError, errMsg)
 		return
 	}
 	// 返回数据
-	ctx.JSON(http.StatusOK, gin.H{
-		"code": 200,
-		"data": gin.H{
+	ulits.ResponseWithData(ctx, http.StatusOK, ulits.ResponseData{
+		Code: 200,
+		Data: gin.H{
 			"token": token,
 		},
-		"msg": "Login success",
+		Msg: "Login success",
 	})
 }
 
@@ -141,7 +122,29 @@ func Info(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"data": gin.H{
-			"user": user,
+			"user": user.(dao.User).Name,
 		},
 	})
+}
+
+func validateUserParams(name, password string) (string, bool) {
+	if len(name) < 1 || len(name) > 16 {
+		return "Account resolution failed", false
+	} else if len(password) < 6 || len(password) > 16 {
+		return "Password resolution failed", false
+	}
+	return "", true
+}
+
+func hashPassword(password string) (string, error) {
+	hashPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return string(hashPassword), nil
+}
+
+func verifPassword(hashedPassword, password string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+	return err == nil
 }

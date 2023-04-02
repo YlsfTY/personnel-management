@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"personnel-management-backend/dao"
-	"personnel-management-backend/router"
+	"personnel-management-backend/server"
 )
 
 func main() {
 	fmt.Println("Hello go")
 	dao.DBinit()
+	server.SetupServer()
 	defer dao.CloseDB()
-	r := router.SetupRouter()
-	r.Run(":8080")
-
 }

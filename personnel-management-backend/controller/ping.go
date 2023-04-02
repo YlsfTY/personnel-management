@@ -7,7 +7,7 @@ import (
 )
 
 func Ping(ctx *gin.Context) {
-	ctx.JSON(http.StatusOK,gin.H{
-		"msg":"pong",
+	ctx.JSON(http.StatusOK, gin.H{
+		"msg": "pong",
 	})
 }

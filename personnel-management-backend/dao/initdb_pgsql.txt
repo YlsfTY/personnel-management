@@ -1,0 +1,76 @@
+package dao
+
+import (
+	"fmt"
+	"os"
+
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+)
+
+const (
+	username = "postgres"     //数据库账号
+	password = "admin123"     //密码
+	host     = "127.0.0.1"    //地址
+	port     = 5432           //端口
+	DBname   = "personnel_db" //数据库名称
+	timeout  = "10s"          //超时
+)
+
+var Db *gorm.DB
+var DbErr error
+
+// 连接数据库
+func DBinit() {
+	// 连接字符串
+	// dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&&parseTime=True&loc=Local&timeout=%s", username, password, host, port, DBname, timeout)
+	// dsn := fmt.Sprintf("user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai", username, password, DBname, port)
+	// f, err := os.Create("./logs/gorm.log")
+	// if err != nil {
+	// log.Fatal(err)
+	// }
+	// 连接
+	Db, DbErr = gorm.Open(postgres.Open("user=postgres password=admin123 dbname=personnel_db port=5432"), &gorm.Config{
+		// 日志
+		Logger: logger.Default.LogMode(logger.Info),
+		// Logger: logger.New(&FileLogger{f}, logger.Config{}).LogMode(logger.Warn),
+	})
+	if DbErr != nil {
+		panic("数据库连接失败,failed to connect mysql,err:" + DbErr.Error())
+	}
+	sqlDb, err := Db.DB()
+	if err != nil {
+		panic("无法获取DB实例,err:" + err.Error())
+	}
+	sqlDb.SetMaxIdleConns(10)
+	sqlDb.SetMaxOpenConns(50)
+	fmt.Println("连接数据库成功,connect success!!")
+	// 进行数据表初始化，如果表已存在，无操作
+	// AutoMigrate()
+}
+
+// 初始化数据表/自动迁移
+func AutoMigrate() {
+	err := Db.AutoMigrate(&User{})
+	if err != nil {
+		fmt.Println(err.Error())
+		panic("初始化Users数据表失败")
+	}
+}
+
+func CloseDB() {
+	db, err := Db.DB()
+	if err != nil {
+		panic(err)
+	}
+	db.Close()
+}
+
+type FileLogger struct {
+	*os.File
+}
+
+func (f *FileLogger) Printf(msg string, data ...interface{}) {
+	fmt.Fprintf(f.File, msg, data...)
+}

@@ -13,7 +13,7 @@ import (
 // true用户名存在
 func (u *User) SearchUserName() (bool, error) {
 	// result := Db.Limit(1).Find(user, "user_name = ?", user.Name)
-	err := Db.First(u, "user_name = ?", u.Name).Error
+	err := Db.Take(u, "user_name = ?", u.Name).Error
 	if err != nil {
 		// 判断err是否是未找到数据错误
 		if errors.Is(err, gorm.ErrRecordNotFound) {

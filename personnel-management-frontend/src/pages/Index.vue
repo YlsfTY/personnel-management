@@ -13,7 +13,6 @@
       <h1>介绍</h1>
     </div>
   </div>
-
 </template>
 
 <script lang="ts">

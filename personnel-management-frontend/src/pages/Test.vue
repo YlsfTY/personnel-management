@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { defineComponent } from 'vue'
+  import { defineComponent, reactive, ref } from 'vue'
   import { NConfigProvider, NInput, NDatePicker, NSpace } from 'naive-ui'
   // theme
   import { createTheme, inputDark, datePickerDark } from 'naive-ui'
@@ -14,6 +14,20 @@
       NSpace
     },
     setup() {
+
+      const model:{value:{[key:string]:number}} = ref({
+        a:1,
+        b:2,
+        c:3
+      })
+
+      Object.keys(model.value).forEach((key)=>{
+        console.log(model.value[key]);
+      })
+      Object.values(model.value).forEach((value:any)=>{
+        console.log(value)
+      })
+
       return {
         darkTheme: createTheme([inputDark, datePickerDark]),
         zhCN,

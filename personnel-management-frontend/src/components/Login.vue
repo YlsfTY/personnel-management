@@ -112,7 +112,6 @@ export default defineComponent({
         minlength: 6,
         maxlength: 16,
       },
-
     ])
 
     const isLoginMode = ref(false);
@@ -196,7 +195,12 @@ export default defineComponent({
         }
       }
     }
+    let waiting = false
     function handleLogin() {
+      if (waiting) {
+        return
+      }
+      waiting = true
       let submitErr = false
       inputs.slice(0,2).forEach(input=>{
         handleBlur(input)
@@ -206,6 +210,7 @@ export default defineComponent({
       })
       if (submitErr) {
         window.$message.warning("格式有误")
+        waiting = false
         return
       }
       const submitData: UserData = {
@@ -214,12 +219,20 @@ export default defineComponent({
       }
       userLogin(submitData)
         .then((res) => {
-          // console.log(res);
+          console.log(res);
           window.$message.success("登录成功")
+          waiting = false
+        }).catch(()=>{
+          window.$message.warning("登录失败")
+          waiting = false
         })
     }
 
     function handleRegister() {
+      if (waiting) {
+        return
+      }
+      waiting = true
       let submitErr = false
       inputs.forEach(input => {
         handleBlur(input)
@@ -229,6 +242,7 @@ export default defineComponent({
       })
       if (submitErr) {
         window.$message.warning("格式有误")
+        waiting = false
         return
       }
       const submitData: UserData = {
@@ -239,6 +253,10 @@ export default defineComponent({
         .then((res) => {
           // console.log(res);
           window.$message.success("注册成功")
+          waiting = false
+        }).catch(()=>{
+          window.$message.warning("注册失败")
+          waiting = false
         })
     }
 

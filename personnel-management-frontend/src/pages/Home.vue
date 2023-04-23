@@ -14,7 +14,6 @@
       <n-layout has-sider id="center">
         <n-layout-content content-style="padding: 24px;">
           <router-view>
-
           </router-view>
         </n-layout-content>
         <n-layout-sider
@@ -22,9 +21,7 @@
           :width="`100%`"
           style="max-width:200px;min-width:0px"
         >
-          <h1>
-            侧边栏
-          </h1>
+          <siderMenu/>
         </n-layout-sider>
       </n-layout>
       <n-layout-footer>
@@ -39,6 +36,7 @@ import { defineComponent } from 'vue';
 import { NSpace, NLayout, NLayoutContent, NLayoutHeader, NLayoutFooter, NLayoutSider } from 'naive-ui'
 import { RouterView } from 'vue-router';
 import Avatar from '@/components/Avatar.vue';
+import siderMenu from '@/components/siderMenu.vue';
 export default defineComponent({
   name: 'Home',
   components: {
@@ -49,7 +47,8 @@ export default defineComponent({
     NLayoutSider,
     NLayoutHeader,
     RouterView,
-    Avatar
+    Avatar,
+    siderMenu
   },
   setup(props) {
 
@@ -105,17 +104,13 @@ export default defineComponent({
     .n-layout-sider {
       background: rgba(128, 128, 128, 0.3);
       color: #FFF;
-      background-color: red;
+      // background-color: red;
       width: 200px;
       overflow: auto;
     }
   }
 
 }
-
-
-
-
 
 .n-layout-footer {
   // background: rgba(128, 128, 128, 0.2);

@@ -1,6 +1,11 @@
 <template>
   <div id="personnel">
-    <n-image width="100" src="http://localhost:5173/src/assets/img/Avatar.png" />
+    <n-image 
+      :width="100"
+      :height="140"
+      :src="imageUrl"
+      :lazy="true"
+    />
     <n-grid :="gridProps">
       <n-gi class="n-gi" :span="12" v-for="(gItem, i) in gItems" :key="i">
         {{ gItem.label }} : {{ gItem.value }}
@@ -16,9 +21,11 @@
 
 <script lang="ts">
 import { defineComponent, reactive, ref, ExtractPropTypes, watch, onMounted, } from 'vue'
-import { NImage, NGrid, NGridItem, NGi,NButton } from 'naive-ui'
+import { NImage, NGrid, NGridItem, NGi, NButton } from 'naive-ui'
 import { personnel } from '@/types/Personnel'
 import { useRouter } from 'vue-router'
+import { getImage, getPersonnel } from '@/utils/request'
+import { formateDate } from '@/utils/date'
 
 type gridItemList = {
   [key in keyof (personnel)]: {
@@ -26,6 +33,8 @@ type gridItemList = {
     value: string | number
   }
 }
+
+// type gItemKeys = keyof gridItemList
 
 export default defineComponent({
   name: 'Personnel',
@@ -38,12 +47,14 @@ export default defineComponent({
   },
   setup() {
     const router = useRouter()
+
+    const imageUrl = ref('')
     const gridProps: ExtractPropTypes<typeof NGrid> = {
       cols: 24,
       xGap: 24,
       yGap: 15
     }
-    const gItems: gridItemList = {
+    const gItems: gridItemList = reactive({
       name: {
         label: '姓名',
         value: ''
@@ -96,17 +107,35 @@ export default defineComponent({
         label: '其它信息',
         value: ''
       }
-    }
+    })
 
-    function handleToInput(e:MouseEvent){
+    function handleToInput(e: MouseEvent) {
       e.preventDefault()
-      router.push({name:'formList'})
-      
+      router.push({ name: 'formList' })
     }
 
+    onMounted(() => {
+      getPersonnel().then((res: any) => {
+        Object.keys(gItems).forEach((key: string) => {
+          gItems[key as keyof gridItemList].value = res.data.personnel[key]
+        })
+        gItems['birthday'].value = formateDate(gItems['birthday'].value as number)
+        gItems['entryTime'].value = formateDate(gItems['entryTime'].value as number)
+        gItems['regularTime'].value = formateDate(gItems['regularTime'].value as number)
+      }).catch(() => {
+        return Promise.resolve()
+      })
+      getImage().then((res: any) => {
+        imageUrl.value = res.data.image + '?_t' + new Date().getTime()
+      }).catch(() => {
+        imageUrl.value = "http://localhost:5173/src/assets/img/Avatar.png"
+        return Promise.resolve()
+      })
+    })
     return {
       gridProps,
       gItems,
+      imageUrl,
       handleToInput
     }
   },
@@ -120,9 +149,15 @@ export default defineComponent({
   justify-content: center;
 
   .n-image {
+    // width: 100px;
+    // height: 140px;
     display: block;
     margin-right: 50px;
     margin-left: 118px;
+    // overflow: hidden;
+    // img{
+      // width: 100%;
+    // }
   }
 
   .n-gi {
@@ -130,7 +165,8 @@ export default defineComponent({
     color: #000;
     font: 800 16px/1.5 '黑体'
   }
-  .n-button{
+
+  .n-button {
     margin: 0 50%;
     transform: translateX(-50%);
     color: #fff;

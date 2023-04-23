@@ -29,7 +29,7 @@ type DatabaseConfig struct {
 var Conf Config
 
 func init() {
-	data, err := ioutil.ReadFile("config.yaml")
+	data, err := ioutil.ReadFile("./config/config.yaml")
 	if err != nil {
 		panic(err)
 	}

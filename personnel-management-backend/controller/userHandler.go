@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"personnel-management-backend/common"
@@ -61,7 +59,7 @@ func UserRegister(ctx *gin.Context) {
 }
 
 func UserLogin(ctx *gin.Context) {
-	// 获取参数
+	// 获取参数UserLogin
 	name := ctx.PostForm("userName")
 	password := ctx.PostForm("userPassword")
 
@@ -79,7 +77,7 @@ func UserLogin(ctx *gin.Context) {
 	//  检验用户
 	ok, err := user.CheckUserState()
 	if err != nil {
-		if errors.Is(err, fmt.Errorf("The user does not exist.")) {
+		if err.Error() == "The user does not exist." {
 			errMsg = err.Error()
 			ulits.ResponseWithError(ctx, http.StatusConflict, errMsg)
 			return
@@ -118,7 +116,11 @@ func UserLogin(ctx *gin.Context) {
 }
 
 func Info(ctx *gin.Context) {
-	user, _ := ctx.Get("user")
+	user, ok := ctx.Get("user")
+	if !ok {
+		ulits.ResponseWithError(ctx, http.StatusUnauthorized, "Unauthorized")
+		return
+	}
 	ctx.JSON(http.StatusOK, gin.H{
 		"code": 200,
 		"data": gin.H{

@@ -1,11 +1,11 @@
 server:
-  host:127.0.0.1
-  port:8000
+  host: "127.0.0.1"
+  port: 8000
 database:
   # driver:mysql
-  host:127.0.0.1
-  port:3306
-  username:root
-  password:admin123
-  database:personnel_db
-  timeout:10s
+  host: "127.0.0.1"
+  port: 3306
+  username: "root"
+  password: "admin123"
+  database: "personnel_db"
+  timeout: "10s"

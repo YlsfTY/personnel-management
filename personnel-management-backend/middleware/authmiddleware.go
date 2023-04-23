@@ -17,7 +17,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		tokenString := ctx.GetHeader("Authorization")
 		if tokenString == "" || !strings.HasPrefix(tokenString, "Bearer") {
-			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "权限不足")
+			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "Unauthorized")
 			ctx.Abort()
 			return
 		}
@@ -25,7 +25,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		claims, err := common.ParseToken(tokenString)
 		if err != nil {
 			log.Printf("解析token失败:%s", err.Error())
-			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "解析token失败")
+			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "Token Parsing Failed")
 			ctx.Abort()
 			return
 		}
@@ -38,7 +38,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			} else {
 				log.Printf("查询用户 %d 失败：%s", claims.UserId, err.Error())
 			}
-			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "权限不足,")
+			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "Unauthorized")
 			ctx.Abort()
 			return
 		}

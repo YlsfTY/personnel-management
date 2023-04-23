@@ -1,25 +1,14 @@
 <template>
   <div id="formTest">
-    <idPhoto/>
+    <idPhoto />
     <n-form ref="formRef" :="formProps">
       <n-grid :="gridProps">
-        <n-form-item-gi 
-          class="n-gi" 
-          v-for="(fItem, i) in fItemGis" :key="i"
-          :="fItem.Props"
-        >
-          <component
-            v-if="fItem.sonForm"
-            :is="fItem.sonForm.Type" 
-            :="fItem.sonForm.Props" 
-            v-model:value="data[fItem.Props.path]"
-          >
+        <n-form-item-gi class="n-gi" v-for="(fItem, i) in fItemGis" :key="i" :="fItem.Props">
+          <component v-if="fItem.sonForm" :is="fItem.sonForm.Type" :="fItem.sonForm.Props"
+            v-model:value="data[fItem.Props.path]">
           </component>
         </n-form-item-gi>
-        <n-gi 
-          class="n-gi"
-          :span="24"
-        >
+        <n-gi class="n-gi" :span="24">
           <n-button @click="handlePersonnel">
             提交
           </n-button>
@@ -30,25 +19,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, ref, ExtractPropTypes, watch, } from 'vue'
+import { defineComponent, reactive, ref, ExtractPropTypes, watch, onMounted, } from 'vue'
 import { NImage, NGrid, NGridItem, NGi, NForm, NFormItem, NFormItemGi, FormInst, } from 'naive-ui'
-import { NInput, NInputNumber, NSelect, NDatePicker,NButton,NUpload,NUploadFileList,NUploadDragger,NUploadTrigger } from 'naive-ui'
+import { NInput, NInputNumber, NSelect, NDatePicker, NButton, NUpload, NUploadFileList, NUploadDragger, NUploadTrigger } from 'naive-ui'
 import { personnel } from '@/types/Personnel'
 import { FormItemRule } from 'naive-ui/lib'
 import idPhoto from '@/components/idPhoto.vue'
+import { getPersonnel } from '@/utils/request'
+import { createPersonnel } from '@/utils/request'
+import { useRouter } from 'vue-router'
 
 type perKeyName = keyof personnel
 
-interface FItemGiProps extends ExtractPropTypes<typeof NFormItemGi>{
-  path:perKeyName
+interface FItemGiProps extends ExtractPropTypes<typeof NFormItemGi> {
+  path: perKeyName
 }
 
-interface FItemGi  {
+interface FItemGi {
   Props: FItemGiProps,
-  sonForm:{
-    Type:string,
-    Props:{},
-  }|null
+  sonForm: {
+    Type: string,
+    Props: {},
+  } | null
 }
 
 export default defineComponent({
@@ -73,6 +65,9 @@ export default defineComponent({
     idPhoto
   },
   setup() {
+
+    const router = useRouter()
+
     const data: personnel = reactive({
       name: '',
       age: 0,
@@ -86,7 +81,7 @@ export default defineComponent({
       entryTime: 0,
       regularTime: 0,
       salary: 0,
-      additional: ''
+      additional: '',
     })
 
     const formRef = ref<FormInst | null>(null)
@@ -203,13 +198,26 @@ export default defineComponent({
       },
       entryTime: {
         required: true,
-        message: '请输入入职日期',
+        // message: '请输入入职日期',
         trigger: 'blur',
+        validator: (rule: FormItemRule, value: number) => {
+          if (!value) {
+            return new Error('请输入入职日期')
+          }
+          if (new Date() < new Date(value)) {
+            return new Error('入职日期不能超过今天')
+          } else {
+            return true
+          }
+        }
       },
       regularTime: {
-        required: true,
-        message: '请输入转正日期',
+        required: false,
+        // message: '请输入转正日期',
         trigger: 'blur',
+        validator: (rule: FormItemRule, value: number) => {
+          return true
+        }
       },
       pay: {
         required: true,
@@ -223,7 +231,7 @@ export default defineComponent({
       },
     }
 
-    const formProps: ExtractPropTypes<typeof NForm> = ( {
+    const formProps: ExtractPropTypes<typeof NForm> = ({
       // 禁用
       disabled: false,
       // 行内
@@ -316,9 +324,9 @@ export default defineComponent({
           Type: 'NInputNumber',
           Props: {
             placeholder: "请输入年龄",
-            min:'16',
-            max:'120',
-            showButton:false,
+            min: '16',
+            max: '120',
+            showButton: false,
           }
         },
       },
@@ -359,9 +367,9 @@ export default defineComponent({
           Props: {
             options: [
               {
-                label:"点击选择学历",
-                value:'',
-                disabled:true
+                label: "点击选择学历",
+                value: '',
+                disabled: true
               },
               {
                 label: "中学",
@@ -407,9 +415,9 @@ export default defineComponent({
           Props: {
             options: [
               {
-                label:"点击选择部门",
-                value:'',
-                disabled:true
+                label: "点击选择部门",
+                value: '',
+                disabled: true
               },
               {
                 label: "A部门",
@@ -449,6 +457,7 @@ export default defineComponent({
           span: 12,
           label: "转正日期",
           path: "regularTime",
+          showRequireMark: false,
         },
         sonForm: {
           Type: 'NDatePicker',
@@ -467,7 +476,7 @@ export default defineComponent({
           Type: 'NInputNumber',
           Props: {
             placeholder: "请输入薪资",
-            showButton:false,
+            showButton: false,
           }
         },
       },
@@ -482,7 +491,7 @@ export default defineComponent({
           Type: 'NInput',
           Props: {
             placeholder: "请输入补充信息",
-            type:"textarea"
+            type: "textarea"
           }
         },
       },
@@ -515,16 +524,33 @@ export default defineComponent({
       return
     })
 
-    function handlePersonnel(e:MouseEvent){
+    function handlePersonnel(e: MouseEvent) {
       e.preventDefault()
-      formRef.value?.validate((err)=>{
+      formRef.value?.validate((err) => {
         if (err) {
           window.$message.error('验证失败')
         } else {
-          window.$message.success('验证成功')
+          createPersonnel(data).then((res: any) => {
+            window.$message.success('创建成功')
+            router.push("personnel")
+          }).catch(() => {
+            window.$message.success('创建失败')
+            return Promise.resolve()
+          })
         }
       })
     }
+
+    onMounted(() => {
+      getPersonnel().then((res: any) => {
+        (Object.keys(data) as Array<keyof typeof data>)
+          .forEach(key => {
+            (data[key] as string|number) = (res.data.personnel as personnel)[key]
+          });
+      }).catch(() => {
+        return Promise.resolve()
+      })
+    })
 
     return {
       formRef,
@@ -543,11 +569,13 @@ export default defineComponent({
 #formTest {
   display: flex;
   justify-content: center;
+
   .n-date-picker,
   .n-input-number {
     width: 100%;
   }
-  .n-button{
+
+  .n-button {
     margin: 0 50%;
     transform: translateX(-50%);
     color: #fff;

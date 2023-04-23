@@ -9,13 +9,14 @@
       >
         <span>没有账号，去</span>注册
       </h2>
-      <div class="input-box">
+      <form class="input-box">
         <input v-for="(input, index) in inputs" 
           :key="index"
           :type="input.type"
           :placeholder="input.placeholder"
           :minlength="input.minlength"
           :maxlength="input.maxlength"
+          :autocomplete="input.autocomplete"
           :class="{
             'error':input.isError,
             'input-shake':input.isShake
@@ -23,7 +24,7 @@
           v-model="data[input.name]"
           @blur="handleBlur(input)"
         >
-      </div>
+      </form>
       <button @click="handleRegister">注册</button>
     </div>
 
@@ -37,7 +38,7 @@
         >
           <span>已有账号，去</span>登录
         </h2>
-        <div class="input-box">
+        <form class="input-box">
           <input
             v-for="(input, index) in inputs.slice(0,2)" 
             :key="index"
@@ -45,14 +46,15 @@
             :placeholder="input.placeholder"
             :minlength="input.minlength"
             :maxlength="input.maxlength"
+            :autocomplete="input.autocomplete"
             :class="{
               'error':input.isError,
               'input-shake':input.isShake
             }"
             v-model="data[input.name]"
-            @blur="handleBlur(input)"
+            @blur="handleBlur(input)" 
           >
-        </div>
+        </form>
         <button @click="handleLogin">登录</button>
       </div>
     </div>
@@ -64,6 +66,7 @@
 import { ref, reactive, watch, defineComponent } from 'vue';
 import { userLogin, userRegister } from '@/utils/request';
 import { UserData } from "@/types/UserData"
+import { useRouter } from 'vue-router';
 
 interface inputCell {
   type: "text" | "password";
@@ -78,6 +81,9 @@ interface inputCell {
 export default defineComponent({
   components: {},
   setup() {
+
+    const router = useRouter();
+
     const data = reactive<UserData>({
       userName: '',
       userPassword: '',
@@ -93,6 +99,7 @@ export default defineComponent({
         name: "userName",
         minlength: 1,
         maxlength: 16,
+        autocomplete:"username"
       },
       {
         type: "password",
@@ -102,6 +109,7 @@ export default defineComponent({
         name: "userPassword",
         minlength: 6,
         maxlength: 16,
+        autocomplete:"new-password"
       },
       {
         type: "password",
@@ -111,6 +119,7 @@ export default defineComponent({
         name: "verifyPassword",
         minlength: 6,
         maxlength: 16,
+        autocomplete:"current-password"
       },
     ])
 
@@ -218,14 +227,12 @@ export default defineComponent({
         userPassword: data.userPassword,
       }
       userLogin(submitData)
-        .then((res) => {
-          console.log(res);
-          window.$message.success("登录成功")
-          waiting = false
-        }).catch(()=>{
-          window.$message.warning("登录失败")
-          waiting = false
-        })
+      .then(res => {
+        router.push("home")
+      })
+      .finally(() => {
+        waiting = false
+      })
     }
 
     function handleRegister() {
@@ -250,14 +257,13 @@ export default defineComponent({
         userPassword: data.userPassword,
       }
       userRegister(submitData)
-        .then((res) => {
-          // console.log(res);
-          window.$message.success("注册成功")
-          waiting = false
-        }).catch(()=>{
-          window.$message.warning("注册失败")
-          waiting = false
-        })
+      .then(res => {
+        // router.push("/")
+        toggleMode()
+      })
+      .finally(() => {
+        waiting = false
+      })
     }
 
     return {

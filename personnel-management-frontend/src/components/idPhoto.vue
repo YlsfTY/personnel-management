@@ -33,10 +33,13 @@ export default defineComponent({
     ])
 
     const photoProps: ExtractPropTypes<typeof NUpload> = reactive({
-      action: "127.0.0.1:5173/",
+      action: "http://127.0.0.1:8000/api/personnel/uploadImage",
       defaultFileList: photoList,
       listType: "image-card",
-      max: 1
+      max: 1,
+      headers: {
+        Authorization: 'Bearer ' + localStorage.getItem('token'),
+      }
     })
 
     function handlePreview(file: UploadFileInfo) {
@@ -49,7 +52,6 @@ export default defineComponent({
       previewImageUrl: previewImageUrlRef,
       photoProps,
       handlePreview,
-
     }
   }
 })

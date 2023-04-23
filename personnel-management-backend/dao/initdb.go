@@ -43,6 +43,10 @@ func AutoMigrate() {
 	if err != nil {
 		panic("初始化Users数据表失败")
 	}
+	err = Db.AutoMigrate(&Personnel{})
+	if err != nil {
+		panic("初始化Personnels数据表失败")
+	}
 }
 
 func CloseDB() {

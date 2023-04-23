@@ -11,7 +11,6 @@ import (
 )
 
 func SetupRouter(r *gin.Engine) {
-	// 创建一个默认引擎，有Logger(日志) 与 Recovery(崩溃处理)中间件
 	r.Use(middleware.CorsMiddleware())
 	api := r.Group("/api") //路由组
 	{
@@ -22,15 +21,25 @@ func SetupRouter(r *gin.Engine) {
 			code := ctx.PostForm("code")
 			count, _ := strconv.Atoi(code)
 			fmt.Println(count)
-			// ctx.JSON(count, gin.H{
-			// 	"code": code,
-			// })
 			ctx.AbortWithStatus(http.StatusNotFound)
 		})
-		// api.GET("/user/info", middleware.AuthMiddleware(), controller.Info)
 	}
 	{
 		api.Use(middleware.AuthMiddleware())
 		api.GET("/user/info", controller.Info)
+		api.POST("/personnel/create", controller.CreatePer)
+		api.GET("/personnel/getPersonnel", controller.GetPer)
+		api.POST("/personnel/uploadImage", controller.UploadImage)
+		api.GET("/personnel/getImage", controller.GetImage)
+	}
+	static := r.Group("/static")
+	{
+		static.Use(func(c *gin.Context) {
+			c.Header("Cache-Control", "no-cache, no-store, must-revalidate")
+			c.Header("Expires", "0")
+			c.Header("Pragma", "no-cache")
+			c.Next()
+		})
+		static.Static("/image", "./static/image")
 	}
 }

@@ -56,6 +56,10 @@ func (u *User) DeleteUser() (bool, error) {
 	}
 
 	u.State = false
+	// u.DeletedAt = gorm.DeletedAt{
+	// Time:time.Now(),
+	// Valid: true,
+	// }
 	err = Db.Save(u).Error
 	if err != nil {
 		log.Printf("Error while updating user state: %v", err)
@@ -80,4 +84,13 @@ func (u *User) CheckUserState() (bool, error) {
 	}
 	// state=false
 	return false, nil
+}
+
+func (user *User) IsUserWithPer() (bool, error) {
+	// 检查 `User` 对象和 `Personnel` 对象之间是否存在关联关系
+	// var count int64
+	result := Db.Model(user).Association("Personnels")
+
+	// 如果存在关联关系，则返回 true；否则返回 false
+	return result.Count() > 0, result.Error
 }

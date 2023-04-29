@@ -13,14 +13,20 @@ type Personnel struct {
 	School      string `gorm:"column:school; type:varchar(80); not null" json:"school"`
 	Department  string `gorm:"column:department; type:varchar(50); not null" json:"department"`
 	EntryTime   uint   `gorm:"column:entry_time; not null" json:"entryTime"`
-	RegularTime *uint   `gorm:"column:regular_time" json:"regularTime"`
+	RegularTime *uint  `gorm:"column:regular_time" json:"regularTime"`
 	Salary      uint   `gorm:"column:salary; not null" json:"salary"`
 	Additional  string `gorm:"column:additional; type:varchar(800)" json:"additional"`
 }
 
+type ListData struct {
+	UserName      string `json:"userName"`
+	PersonnelName string `json:"name"`
+	Department    string `json:"department"`
+}
+
 func (p *Personnel) Validate() error {
 	var validate = validator.New()
-	if err := validate.Struct(p);err!=nil {
+	if err := validate.Struct(p); err != nil {
 		return err
 	}
 	return nil

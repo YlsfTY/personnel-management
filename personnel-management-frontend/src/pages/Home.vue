@@ -21,7 +21,9 @@
           :width="`100%`"
           style="max-width:200px;min-width:0px"
         >
+        <Suspense>
           <siderMenu/>
+        </Suspense>
         </n-layout-sider>
       </n-layout>
       <n-layout-footer>
@@ -32,7 +34,7 @@
 </template>
 
 <script lang="ts" >
-import { defineComponent } from 'vue';
+import { defineComponent, Suspense } from 'vue';
 import { NSpace, NLayout, NLayoutContent, NLayoutHeader, NLayoutFooter, NLayoutSider } from 'naive-ui'
 import { RouterView } from 'vue-router';
 import Avatar from '@/components/Avatar.vue';
@@ -48,7 +50,7 @@ export default defineComponent({
     NLayoutHeader,
     RouterView,
     Avatar,
-    siderMenu
+    siderMenu,
   },
   setup(props) {
 
@@ -91,6 +93,7 @@ export default defineComponent({
   &#center {
     max-width: 1200px;
     margin: 0 auto;
+
 
     .n-layout-content {
       // width: 60vw;

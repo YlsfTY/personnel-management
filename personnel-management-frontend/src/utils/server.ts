@@ -59,6 +59,16 @@ export const postJson = (config: AxiosRequestConfig<any>) => {
   })
 }
 
+export const deleteReq = (config: AxiosRequestConfig<any>) => {
+  config.headers = config.headers || {}
+  config.headers["Content-Type"] = "application/x-www-form-urlencoded;charset=utf-8"
+  return Server({
+    ...config,
+    method: "delete",
+    data: config.data,
+  })
+}
+
 const handleResErr = (err: any) => {
   // console.log('aaaaaa'+err);
   if (err.response) {
@@ -69,12 +79,16 @@ const handleResErr = (err: any) => {
         switch (msg) {
           case "Failed to get personnel":
             // window.$message.warning("获取人员信息失败")
-            return Promise.resolve()
+            // return Promise.resolve()
+            break;
+          case "the user does not exist":
             break;
           default:
             window.$message.warning("服务器异常");
+            return err
             break;
         }
+        return Promise.resolve()
         break;
       case 400:
         switch (msg) {

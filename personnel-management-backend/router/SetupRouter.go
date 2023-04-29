@@ -32,6 +32,16 @@ func SetupRouter(r *gin.Engine) {
 		api.POST("/personnel/uploadImage", controller.UploadImage)
 		api.GET("/personnel/getImage", controller.GetImage)
 	}
+	{
+		api.Use(middleware.AdminAuthMiddleware())
+		api.GET("/admin/isAdmin", controller.IsAdmin)
+		api.GET("/admin/listData", controller.AdminGetListData)
+		api.GET("/admin/personnelData", controller.AdminGetPersonnelData)
+		api.POST("/admin/uploadImage", controller.AdminUploadImage)
+		api.GET("/admin/getImage", controller.AdminGetImage)
+		api.POST("/admin/createPersonnel", controller.AdminCreatePer)
+		api.DELETE("/admin/DeletePersonnel", controller.AdminDeletePersonnel)
+	}
 	static := r.Group("/static")
 	{
 		static.Use(func(c *gin.Context) {

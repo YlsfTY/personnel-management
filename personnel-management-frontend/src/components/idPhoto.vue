@@ -25,22 +25,31 @@ export default defineComponent({
     NUpload,
     NModal
   },
-  setup() {
+  props: [
+    'userName',
+  ],
+  setup(props) {
     const showModalRef = ref(false)
     const previewImageUrlRef = ref('')
 
     const photoList: UploadFileInfo[] = reactive([
     ])
 
-    const photoProps: ExtractPropTypes<typeof NUpload> = reactive({
-      action: "http://127.0.0.1:8000/api/personnel/uploadImage",
+    const photoProps: ExtractPropTypes<typeof NUpload> = {
+      // action: "http://127.0.0.1:8000/api/personnel/uploadImage",
       defaultFileList: photoList,
       listType: "image-card",
       max: 1,
       headers: {
         Authorization: 'Bearer ' + localStorage.getItem('token'),
       }
-    })
+    }
+
+    if (props.userName === sessionStorage.getItem('userName')) {
+      photoProps.action = 'http://127.0.0.1:8000/api/personnel/uploadImage'
+    }else {
+      photoProps.action = `http://127.0.0.1:8000/api/admin/uploadImage?userName=${props.userName}`
+    }
 
     function handlePreview(file: UploadFileInfo) {
       const { url } = file

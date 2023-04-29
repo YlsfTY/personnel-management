@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+*.png
+*.jpg
+*.jpge
+*.txt
+./personnel-management-backend/docs/*
 
 # Editor directories and files
 .vscode/*

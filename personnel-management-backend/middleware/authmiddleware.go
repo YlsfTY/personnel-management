@@ -47,3 +47,15 @@ func AuthMiddleware() gin.HandlerFunc {
 		ctx.Next()
 	}
 }
+
+func AdminAuthMiddleware() gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		user, _ := ctx.Get("user")
+		if user.(dao.User).Name != "admin" {
+			ulits.ResponseWithError(ctx, http.StatusUnauthorized, "Unauthorized")
+			ctx.Abort()
+			return
+		}
+		ctx.Next()
+	}
+}

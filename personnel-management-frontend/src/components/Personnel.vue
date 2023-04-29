@@ -1,20 +1,15 @@
 <template>
   <div id="personnel">
-    <n-image 
-      :width="100"
-      :height="140"
-      :src="imageUrl"
-      :lazy="true"
-    />
+    <n-image :width="100" :height="140" :src="imageUrl" :lazy="true" />
     <n-grid :="gridProps">
       <n-gi class="n-gi" :span="12" v-for="(gItem, i) in gItems" :key="i">
         {{ gItem.label }} : {{ gItem.value }}
       </n-gi>
-      <n-gi class="n-gi" :span="24">
+      <!-- <n-gi class="n-gi" :span="24">
         <n-button @click="handleToInput">
           修改
         </n-button>
-      </n-gi>
+      </n-gi> -->
     </n-grid>
   </div>
 </template>
@@ -24,7 +19,7 @@ import { defineComponent, reactive, ref, ExtractPropTypes, watch, onMounted, } f
 import { NImage, NGrid, NGridItem, NGi, NButton } from 'naive-ui'
 import { personnel } from '@/types/Personnel'
 import { useRouter } from 'vue-router'
-import { getImage, getPersonnel } from '@/utils/request'
+import { a_getImage, a_getPersonnel, getImage, getPersonnel } from '@/utils/request'
 import { formateDate } from '@/utils/date'
 
 type gridItemList = {
@@ -45,15 +40,21 @@ export default defineComponent({
     NGi,
     NButton
   },
-  setup() {
+  props: {
+    userName: {
+      type: String,
+      required: true
+    }
+  },
+  setup(props) {
     const router = useRouter()
 
     const imageUrl = ref('')
-    const gridProps: ExtractPropTypes<typeof NGrid> = {
+    const gridProps: ExtractPropTypes<typeof NGrid> = reactive({
       cols: 24,
       xGap: 24,
       yGap: 15
-    }
+    })
     const gItems: gridItemList = reactive({
       name: {
         label: '姓名',
@@ -114,7 +115,28 @@ export default defineComponent({
       router.push({ name: 'formList' })
     }
 
-    onMounted(() => {
+    // onMounted(() => {
+    //   getPersonnel().then((res: any) => {
+    //     Object.keys(gItems).forEach((key: string) => {
+    //       gItems[key as keyof gridItemList].value = res.data.personnel[key]
+    //     })
+    //     gItems['birthday'].value = formateDate(gItems['birthday'].value as number)
+    //     gItems['entryTime'].value = formateDate(gItems['entryTime'].value as number)
+    //     gItems['regularTime'].value = formateDate(gItems['regularTime'].value as number)
+    //   }).catch(() => {
+    //     return Promise.resolve()
+    //   })
+    //   getImage().then((res: any) => {
+    //     imageUrl.value = res.data.image + '?_t' + new Date().getTime()
+    //   }).catch(() => {
+    //     imageUrl.value = "http://localhost:5173/src/assets/img/Avatar.png"
+    //     return Promise.resolve()
+    //   })
+    // })
+
+    console.log(props.userName);
+    if (props.userName === sessionStorage.getItem('userName')) {
+      
       getPersonnel().then((res: any) => {
         Object.keys(gItems).forEach((key: string) => {
           gItems[key as keyof gridItemList].value = res.data.personnel[key]
@@ -128,10 +150,33 @@ export default defineComponent({
       getImage().then((res: any) => {
         imageUrl.value = res.data.image + '?_t' + new Date().getTime()
       }).catch(() => {
-        imageUrl.value = "http://localhost:5173/src/assets/img/Avatar.png"
         return Promise.resolve()
       })
-    })
+    } else {
+      a_getPersonnel(props.userName).then((res: any) => {
+        Object.keys(gItems).forEach((key: string) => {
+          gItems[key as keyof gridItemList].value = res.data.personnel[key]
+        })
+        gItems['birthday'].value = formateDate(gItems['birthday'].value as number)
+        gItems['entryTime'].value = formateDate(gItems['entryTime'].value as number)
+        gItems['regularTime'].value = formateDate(gItems['regularTime'].value as number)
+      }).catch(() => {
+        return Promise.resolve()
+      })
+      a_getImage(props.userName).then((res: any) => {
+        imageUrl.value = res.data.image + '?_t' + new Date().getTime()
+      }).catch(() => {
+        return Promise.resolve()
+      })
+    }
+
+    // const mediaQuery = window.matchMedia('(max-width: 700px)')      
+    // if (mediaQuery.matches) {
+    //   gridProps.cols = 20
+    // } else {
+    //   gridProps.cols = 24
+    // }
+
     return {
       gridProps,
       gItems,
@@ -147,23 +192,25 @@ export default defineComponent({
 
   display: flex;
   justify-content: center;
-
+  margin-left: 50px;
+  color: #000;
+  font: 800 16px/1.5 '黑体';
+  
   .n-image {
     // width: 100px;
     // height: 140px;
     display: block;
     margin-right: 50px;
-    margin-left: 118px;
+    margin-left: 0px;
     // overflow: hidden;
     // img{
-      // width: 100%;
+    // width: 100%;
     // }
   }
 
+
   .n-gi {
     padding-bottom: 50px;
-    color: #000;
-    font: 800 16px/1.5 '黑体'
   }
 
   .n-button {

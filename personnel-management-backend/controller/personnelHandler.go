@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -63,27 +62,6 @@ func CreatePer(ctx *gin.Context) {
 	})
 }
 
-// func UpdatePer(ctx *gin.Context) {
-// 	var p dao.Personnel
-// 	if err := ctx.ShouldBindJSON(&p); err != nil {
-// 		ulits.ResponseWithError(ctx, http.StatusBadRequest, "Failed to parse JSON")
-// 		return
-// 	}
-// 	if err := p.Validate(); err != nil {
-// 		ulits.ResponseWithError(ctx, http.StatusBadRequest, "Failed to parse JSON")
-// 		return
-// 	}
-// 	if err := p.UpdatePersonnel(); err != nil {
-// 		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "Failed to update personnel")
-// 		return
-// 	}
-// 	ulits.ResponseWithData(ctx, http.StatusOK, ulits.ResponseData{
-// 		Code: 200,
-// 		Data: nil,
-// 		Msg:  "Personnel update successfully",
-// 	})
-// }
-
 func GetPer(ctx *gin.Context) {
 	user, ok := ctx.Get("user")
 	if !ok {
@@ -95,27 +73,15 @@ func GetPer(ctx *gin.Context) {
 		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "User type error")
 		return
 	}
-	// var p *dao.Personnel{}
 	p := &dao.Personnel{}
 	if err := p.GetPersonnel(&u); err != nil {
 		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "Failed to get personnel")
 		return
 	}
-	fmt.Println(p)
-	jsonStr, err := json.Marshal(p)
-	if err != nil {
-		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "Failed to parse JSON")
-		return
-	}
-	var pMap map[string]interface{}
-	if err := json.Unmarshal(jsonStr, &pMap); err != nil {
-		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "Failed to parse JSON")
-		return
-	}
 	ulits.ResponseWithData(ctx, http.StatusOK, ulits.ResponseData{
 		Code: 200,
 		Data: gin.H{
-			"personnel": pMap,
+			"personnel": p,
 		},
 		Msg: "Get personnel successfully",
 	})
@@ -135,7 +101,6 @@ func UploadImage(ctx *gin.Context) {
 	}
 	file, err := ctx.FormFile("file")
 	if err != nil {
-		fmt.Println("123")
 		ulits.ResponseWithError(ctx, http.StatusBadRequest, "Fail to upload")
 		return
 	}
@@ -144,15 +109,6 @@ func UploadImage(ctx *gin.Context) {
 		ulits.ResponseWithError(ctx, http.StatusBadRequest, "Fail to upload")
 		return
 	}
-
-	// oldImagePath := fmt.Sprintf("./static/image/%s.{jpg,jpeg,png}", u.Name)
-	// if _, err := ioutil.ReadFile(oldImagePath); err != nil {
-	// 	if !os.IsNotExist(err) {
-	// 		fmt.Println(err)
-	// 		ulits.ResponseWithError(ctx, http.StatusInternalServerError, "Fail to upload")
-	// 		return
-	// 	}
-	// }
 
 	oldImagePath, err := getImagePath(u.Name)
 	if err != nil {
@@ -236,18 +192,3 @@ func getImagePath(uName string) (string, error) {
 	return imagePath, nil
 }
 
-// baseURL := "http://127.0.0.1:8000/static/image"
-// imagePath := fmt.Sprintf("/%s.{jpg,jpeg,png}", url.PathEscape(u.Name))
-
-// fmt.Println(imagePath)
-
-// matchs, err := filepath.Glob(imagePath)
-// if err != nil || len(matchs) == 0 {
-// 	fmt.Println(err)
-// 	fmt.Println(matchs)
-// 	fmt.Println(imageURL)
-// 	ulits.ResponseWithError(ctx, http.StatusNotFound, "Image not found")
-// 	return
-// }
-
-// ctx.File(imagePath)

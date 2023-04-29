@@ -3,46 +3,40 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 import { NMenu } from 'naive-ui'
-// import type { MenuOption } from 'naive-ui'
-
+import { adminInfo } from '@/utils/request'
 
 export default defineComponent({
   name: 'siderMenu',
   components: {
     NMenu
   },
-  setup() {
+  async setup() {
     const router = useRouter()
+
+    let userListShow = false
+    await adminInfo().then(res => {
+      userListShow = true
+    }).catch(err => {
+      userListShow = false
+      return Promise.resolve()
+    })
+
     const menuOptions = [
-      // {
-      //   label: () =>
-      //     h(
-      //       RouterLink,
-      //       {
-      //         to: {
-      //           name: 'home'
-      //         }
-      //       },
-      //       // '主页'
-      //       {
-      //         default: () => '主页'
-      //       }
-      //     ),
-      //   key: 'go-home',
-      // },
       {
         label: () =>
           h(
             RouterLink,
             {
               to: {
-                name: 'personnel'
+                name: 'personnel',
+                params: {
+                  userName: sessionStorage.getItem('userName')
+                }
               }
             },
-            // '查看信息'
             {
               default: () => '查看信息'
             }
@@ -55,15 +49,34 @@ export default defineComponent({
             RouterLink,
             {
               to: {
-                name: 'formList'
+                name: 'formList',
+                path: '/formList',
+                params: {
+                  userName: sessionStorage.getItem('userName')
+                }
               }
             },
-            // '编辑信息'
             {
               default: () => '编辑信息'
             }
           ),
         key: 'go-formList',
+      },
+      {
+        label: () =>
+          h(
+            RouterLink,
+            {
+              to: {
+                name: 'userList'
+              },
+            },
+            {
+              default: () => '管理用户'
+            }
+          ),
+        key: 'go-userList',
+        show: userListShow,
       },
       {
         label: () =>
@@ -82,7 +95,7 @@ export default defineComponent({
             }
           ),
         key: 'go-login',
-      }
+      },
     ]
     return {
       menuOptions

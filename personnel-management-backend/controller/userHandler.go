@@ -109,7 +109,8 @@ func UserLogin(ctx *gin.Context) {
 	ulits.ResponseWithData(ctx, http.StatusOK, ulits.ResponseData{
 		Code: 200,
 		Data: gin.H{
-			"token": token,
+			"userName": user.Name,
+			"token":    token,
 		},
 		Msg: "Login success",
 	})

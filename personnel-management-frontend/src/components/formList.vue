@@ -1,12 +1,12 @@
 <template>
   <div id="formTest">
-    <idPhoto />
+    <idPhoto :userName="$props.userName" />
     <n-form ref="formRef" :="formProps">
       <n-grid :="gridProps">
         <n-form-item-gi class="n-gi" v-for="(fItem, i) in fItemGis" :key="i" :="fItem.Props">
           <component v-if="fItem.sonForm" :is="fItem.sonForm.Type" :="fItem.sonForm.Props"
-            v-model:value="data[fItem.Props.path]">
-          </component>
+          v-model:value="data[fItem.Props.path]">
+        </component>
         </n-form-item-gi>
         <n-gi class="n-gi" :span="24">
           <n-button @click="handlePersonnel">
@@ -25,7 +25,7 @@ import { NInput, NInputNumber, NSelect, NDatePicker, NButton, NUpload, NUploadFi
 import { personnel } from '@/types/Personnel'
 import { FormItemRule } from 'naive-ui/lib'
 import idPhoto from '@/components/idPhoto.vue'
-import { getPersonnel } from '@/utils/request'
+import { getPersonnel, a_getPersonnel, a_createPersonnel } from '@/utils/request'
 import { createPersonnel } from '@/utils/request'
 import { useRouter } from 'vue-router'
 
@@ -64,7 +64,15 @@ export default defineComponent({
     NUploadTrigger,
     idPhoto
   },
-  setup() {
+
+  props: {
+    userName: {
+      type: String,
+      required: true
+    }
+  },
+
+  setup(props) {
 
     const router = useRouter()
 
@@ -530,27 +538,50 @@ export default defineComponent({
         if (err) {
           window.$message.error('验证失败')
         } else {
-          createPersonnel(data).then((res: any) => {
-            window.$message.success('创建成功')
-            router.push("personnel")
-          }).catch(() => {
-            window.$message.success('创建失败')
-            return Promise.resolve()
-          })
+          if (props.userName === sessionStorage.getItem('userName')) {
+            createPersonnel(data).then((res: any) => {
+              window.$message.success('提交成功')
+              router.push({
+                name: 'personnel',
+                params: {
+                  userName: props.userName
+                }
+              })
+            }).catch(() => {
+              window.$message.success('提交失败')
+              return Promise.resolve()
+            })
+          } else {
+            a_createPersonnel(data,props.userName).then((res: any) => {
+              window.$message.success('提交成功')
+              
+            }).catch(() => {
+              return Promise.resolve()
+            })
+          }
         }
       })
     }
 
-    onMounted(() => {
+    if (props.userName === sessionStorage.getItem('userName')) {
       getPersonnel().then((res: any) => {
-        (Object.keys(data) as Array<keyof typeof data>)
+        (Object.keys(data) as Array<perKeyName>)
           .forEach(key => {
-            (data[key] as string|number) = (res.data.personnel as personnel)[key]
+            (data[key] as string | number) = (res.data.personnel as personnel)[key]
           });
       }).catch(() => {
         return Promise.resolve()
       })
-    })
+    } else {
+      a_getPersonnel(props.userName).then((res: any) => {
+        (Object.keys(data) as Array<perKeyName>)
+          .forEach(key => {
+            (data[key] as string | number) = (res.data.personnel as personnel)[key]
+          })
+      }).catch(() => {
+        return Promise.resolve()
+      })
+    }
 
     return {
       formRef,
